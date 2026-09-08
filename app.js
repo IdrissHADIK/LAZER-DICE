@@ -47,6 +47,29 @@ function setResultColors(results,animate=false){
  });
 }
 
+// Small arcade-style roll sound using the browser's built-in Web Audio API.
+function playRollSound(){
+ try{
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;
+  if(!AudioCtx)return;
+  const ctx=new AudioCtx();
+  const now=ctx.currentTime;
+  [0,0.11,0.22,0.33].forEach((delay,i)=>{
+   const osc=ctx.createOscillator();
+   const gain=ctx.createGain();
+   osc.type="sine";
+   osc.frequency.setValueAtTime(180+i*55,now+delay);
+   osc.frequency.exponentialRampToValueAtTime(95+i*35,now+delay+0.09);
+   gain.gain.setValueAtTime(0.0001,now+delay);
+   gain.gain.exponentialRampToValueAtTime(0.08,now+delay+0.012);
+   gain.gain.exponentialRampToValueAtTime(0.0001,now+delay+0.09);
+   osc.connect(gain); gain.connect(ctx.destination);
+   osc.start(now+delay); osc.stop(now+delay+0.1);
+  });
+  setTimeout(()=>ctx.close().catch(()=>{}),700);
+ }catch(e){}
+}
+
 function renderLeaderboards(){
  const players=[
   ["👑","DiceKing",12450],["⚡","LuckyGirl",10820],["🔥","Razor",9420],["💎","NovaDice",8170],["🎯","PlayerX",7350]
@@ -61,19 +84,41 @@ function renderLeaderboards(){
 function renderHistory(){
  $("#historyList").innerHTML=state.history.length?state.history.map(x=>`<div><span>Roll ${x.roll}: <b>${x.die}</b></span><span class="${x.win?'win':'lose'}">${x.win?"+":"-"}${x.points} pts</span></div>`).join(""):"<p>No rolls yet. Your history will appear here.</p>";
 }
+let rolling=false;
 $("#rollBtn").onclick=()=>{
+ if(rolling)return;
  const stake=Math.max(10,Math.min(250,Number($("#stake").value)||50));
  if(stake>state.balance){$("#result").textContent="Not enough virtual points.";return}
- const results=Array.from({length:4},()=>Math.floor(Math.random()*6)+1);
- const hits=results.filter(n=>n===selectedColor).length;
- const win=hits>0;
- state.balance += win?stake:-stake; state.rolls++; if(win)state.wins++; state.best=Math.max(state.best,win?stake:0);
- const resultNames=results.map(n=>colorNames[n-1]);
- state.history.unshift({roll:state.rolls,die:resultNames.join(" • "),win,points:stake}); state.history=state.history.slice(0,20);
- setResultColors(results,true);
- const selectedName=colorNames[selectedColor-1];
- $("#result").textContent=win?`🎉 ${selectedName} appeared ${hits} time${hits>1?"s":""}! +${stake} virtual points`:`${selectedName} did not appear. -${stake} virtual points`;
- render();
+ rolling=true;
+ $("#rollBtn").disabled=true;
+ $("#result").textContent="🎲 Rolling...";
+ playRollSound();
+ const boxes=[...document.querySelectorAll(".result-die")];
+ boxes.forEach((box,i)=>{
+  box.classList.remove("roll"); void box.offsetWidth;
+  box.classList.add("rolling");
+ });
+ let ticks=0;
+ const shuffle=setInterval(()=>{
+  setResultColors(Array.from({length:4},()=>Math.floor(Math.random()*6)+1));
+  ticks++;
+  if(ticks>=7)clearInterval(shuffle);
+ },90);
+ setTimeout(()=>{
+  const results=Array.from({length:4},()=>Math.floor(Math.random()*6)+1);
+  const hits=results.filter(n=>n===selectedColor).length;
+  const win=hits>0;
+  state.balance += win?stake:-stake; state.rolls++; if(win)state.wins++; state.best=Math.max(state.best,win?stake:0);
+  const resultNames=results.map(n=>colorNames[n-1]);
+  state.history.unshift({roll:state.rolls,die:resultNames.join(" • "),win,points:stake}); state.history=state.history.slice(0,20);
+  boxes.forEach(box=>box.classList.remove("rolling"));
+  setResultColors(results,true);
+  const selectedName=colorNames[selectedColor-1];
+  $("#result").textContent=win?`🎉 ${selectedName} appeared ${hits} time${hits>1?"s":""}! +${stake} virtual points`:`${selectedName} did not appear. -${stake} virtual points`;
+  render();
+  $("#rollBtn").disabled=false;
+  rolling=false;
+ },720);
 };
 $("#resetBtn").onclick=()=>{if(confirm("Reset your virtual points and progress?")){state={balance:1000,rolls:0,wins:0,best:0,vip:0,history:[],theme:"Neon",playerName:""};location.reload()}};
 document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));$("#"+b.dataset.view).classList.add("active")});

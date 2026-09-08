@@ -57,3 +57,16 @@
 .name-box .primary{width:100%;}
 .name-error{display:block;min-height:18px;margin-top:9px;color:#ff879b;}
 @media(max-width:600px){.player-name{max-width:90px;font-size:13px}.name-box{padding:26px 20px}.name-box h2{font-size:24px}}
+
+/* Roll animation for the four result squares */
+.result-die.rolling{animation:diceShake .72s cubic-bezier(.25,.8,.25,1);}
+@keyframes diceShake{
+  0%{transform:translateY(0) rotate(0) scale(1);}
+  12%{transform:translateY(-8px) rotate(-6deg) scale(1.03);}
+  25%{transform:translateY(5px) rotate(7deg) scale(.98);}
+  38%{transform:translateY(-10px) rotate(-8deg) scale(1.05);}
+  52%{transform:translateY(4px) rotate(6deg) scale(.99);}
+  68%{transform:translateY(-6px) rotate(-4deg) scale(1.03);}
+  84%{transform:translateY(2px) rotate(3deg) scale(1.01);}
+  100%{transform:translateY(0) rotate(0) scale(1);}
+}
