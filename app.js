@@ -1,5 +1,6 @@
 const $=s=>document.querySelector(s);
-let state=JSON.parse(localStorage.getItem("lazerDice")||'{"balance":1000,"rolls":0,"wins":0,"best":0,"vip":0,"history":[],"theme":"Neon"}');
+let state=JSON.parse(localStorage.getItem("lazerDice")||'{"balance":1000,"rolls":0,"wins":0,"best":0,"vip":0,"history":[],"theme":"Neon","playerName":""}');
+if(!state.playerName) state.playerName="";
 const vipTiers=[
  {level:0,name:"Rookie",need:0,bonus:"Starter badge"},
  {level:1,name:"Silver",need:1000,bonus:"Silver badge + theme"},
@@ -16,6 +17,7 @@ function save(){localStorage.setItem("lazerDice",JSON.stringify(state));}
 function currentVip(){let t=vipTiers[0];for(const x of vipTiers)if(state.rolls*100>=x.need)t=x;return t}
 function render(){
  renderLeaderboards();
+ $("#playerName").textContent=state.playerName ? "👤 "+state.playerName : "";
  const v=currentVip(); state.vip=v.level;
  $("#balance").textContent=state.balance.toLocaleString()+" pts"; $("#vipBadge").textContent="VIP "+v.level;
  $("#rolls").textContent=state.rolls; $("#wins").textContent=state.wins; $("#best").textContent=state.best;
@@ -73,6 +75,26 @@ $("#rollBtn").onclick=()=>{
  $("#result").textContent=win?`🎉 ${selectedName} appeared ${hits} time${hits>1?"s":""}! +${stake} virtual points`:`${selectedName} did not appear. -${stake} virtual points`;
  render();
 };
-$("#resetBtn").onclick=()=>{if(confirm("Reset your virtual points and progress?")){state={balance:1000,rolls:0,wins:0,best:0,vip:0,history:[],theme:"Neon"};location.reload()}};
+$("#resetBtn").onclick=()=>{if(confirm("Reset your virtual points and progress?")){state={balance:1000,rolls:0,wins:0,best:0,vip:0,history:[],theme:"Neon",playerName:""};location.reload()}};
 document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));$("#"+b.dataset.view).classList.add("active")});
 render();
+
+
+// First-visit player name
+const nameModal=$("#nameModal"), nameInput=$("#nameInput"), nameSave=$("#nameSave"), nameError=$("#nameError");
+function showNameModal(){
+  nameModal.classList.add("show");
+  setTimeout(()=>nameInput.focus(),50);
+}
+function savePlayerName(){
+  const name=nameInput.value.trim().replace(/\s+/g," ");
+  if(name.length<2){nameError.textContent="Please enter at least 2 characters.";return;}
+  state.playerName=name.slice(0,18);
+  save();
+  nameError.textContent="";
+  nameModal.classList.remove("show");
+  render();
+}
+nameSave.onclick=savePlayerName;
+nameInput.addEventListener("keydown",e=>{if(e.key==="Enter")savePlayerName();});
+if(!state.playerName) showNameModal();

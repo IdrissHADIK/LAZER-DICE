@@ -12,7 +12,7 @@
 <body>
   <header class="topbar">
     <div class="brand"><span class="brand-die">🎲</span><span>LAZER <b>DICE</b></span></div>
-    <div class="account"><span id="vipBadge" class="vip-badge">VIP 0</span><span id="balance">1,000 pts</span><button id="resetBtn" class="small">Reset</button></div>
+    <div class="account"><span id="playerName" class="player-name"></span><span id="vipBadge" class="vip-badge">VIP 0</span><span id="balance">1,000 pts</span><button id="resetBtn" class="small">Reset</button></div>
   </header>
 
   <main class="layout">
@@ -102,5 +102,16 @@
 
   <footer>© 2026 Lazer Dice • Free-to-play virtual points • Privacy • Terms</footer>
   <script src="app.js"></script>
+<div id="nameModal" class="name-modal" role="dialog" aria-modal="true" aria-labelledby="nameTitle">
+  <div class="name-box">
+    <div class="name-icon">🎲</div>
+    <h2 id="nameTitle">Welcome to Lazer Dice</h2>
+    <p>Choose your player name to start playing.</p>
+    <input id="nameInput" type="text" maxlength="18" autocomplete="nickname" placeholder="Your player name">
+    <button id="nameSave" class="primary">START PLAYING</button>
+    <small id="nameError" class="name-error"></small>
+  </div>
+</div>
+
 </body>
 </html>
