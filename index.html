@@ -43,16 +43,21 @@
         </div>
 
         <div class="game card">
-          <div id="dice" class="dice color-1">?</div>
-          <div class="dice-colors" aria-label="Dice colors">
-            <button class="color-dot c1 selected" data-color="1" title="Red"></button>
-            <button class="color-dot c2" data-color="2" title="Blue"></button>
-            <button class="color-dot c3" data-color="3" title="Yellow"></button>
-            <button class="color-dot c4" data-color="4" title="Orange"></button>
-            <button class="color-dot c5" data-color="5" title="Purple"></button>
-            <button class="color-dot c6" data-color="6" title="Green"></button>
+          <div id="diceResults" class="dice-results" aria-label="Four dice results">
+            <div class="result-die color-1">RED</div>
+            <div class="result-die color-1">RED</div>
+            <div class="result-die color-1">RED</div>
+            <div class="result-die color-1">RED</div>
           </div>
-          <div id="result" class="result">Choose a points amount and roll.</div>
+          <div class="dice-colors" aria-label="Choose one of six colors">
+            <button class="color-option selected" data-color="1" title="Red"><span class="color-dot c1"></span><span>Red</span></button>
+            <button class="color-option" data-color="2" title="Blue"><span class="color-dot c2"></span><span>Blue</span></button>
+            <button class="color-option" data-color="3" title="Yellow"><span class="color-dot c3"></span><span>Yellow</span></button>
+            <button class="color-option" data-color="4" title="Orange"><span class="color-dot c4"></span><span>Orange</span></button>
+            <button class="color-option" data-color="5" title="Purple"><span class="color-dot c5"></span><span>Purple</span></button>
+            <button class="color-option" data-color="6" title="Green"><span class="color-dot c6"></span><span>Green</span></button>
+          </div>
+          <div id="result" class="result">Choose a color, set your points, then roll 4 dice.</div>
           <div class="controls">
             <label>Points per roll
               <input id="stake" type="number" min="10" max="250" step="10" value="50">

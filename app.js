@@ -28,14 +28,23 @@ function renderThemes(){
  $("#themeCards").innerHTML=themes.map(t=>`<div class="theme ${state.theme===t.name?"selected":""}" data-theme="${t.name}" style="background:${t.style}"><span>${t.name}${t.vip?" • VIP "+t.vip:" • FREE"}</span></div>`).join("");
  document.querySelectorAll(".theme").forEach(el=>el.onclick=()=>{const t=themes.find(x=>x.name===el.dataset.theme);if(state.vip>=t.vip){state.theme=t.name;document.body.style.backgroundImage=t.vip?`linear-gradient(135deg,rgba(4,6,20,.78),rgba(25,5,50,.55)),${t.style}`:'url("assets/background.png")';renderThemes();save();}});
 }
-document.querySelectorAll(".color-dot").forEach(btn=>btn.onclick=()=>{
- const n=btn.dataset.color;
- const d=$("#dice");
- for(let i=1;i<=6;i++) d.classList.remove("color-"+i);
- d.classList.add("color-"+n);
- document.querySelectorAll(".color-dot").forEach(x=>x.classList.remove("selected"));
+const colorNames=["Red","Blue","Yellow","Orange","Purple","Green"];
+let selectedColor=1;
+document.querySelectorAll(".color-option").forEach(btn=>btn.onclick=()=>{
+ const n=Number(btn.dataset.color); selectedColor=n;
+ document.querySelectorAll(".color-option").forEach(x=>x.classList.remove("selected"));
  btn.classList.add("selected");
+ $("#result").textContent=`Selected color: ${colorNames[n-1]}. Now roll 4 dice.`;
 });
+function setResultColors(results,animate=false){
+ const boxes=[...document.querySelectorAll(".result-die")];
+ boxes.forEach((box,i)=>{
+  for(let c=1;c<=6;c++) box.classList.remove("color-"+c);
+  const n=results[i]; box.classList.add("color-"+n); box.textContent=colorNames[n-1].toUpperCase();
+  if(animate){box.classList.remove("roll");void box.offsetWidth;box.classList.add("roll");}
+ });
+}
+
 function renderLeaderboards(){
  const players=[
   ["👑","DiceKing",12450],["⚡","LuckyGirl",10820],["🔥","Razor",9420],["💎","NovaDice",8170],["🎯","PlayerX",7350]
@@ -53,11 +62,15 @@ function renderHistory(){
 $("#rollBtn").onclick=()=>{
  const stake=Math.max(10,Math.min(250,Number($("#stake").value)||50));
  if(stake>state.balance){$("#result").textContent="Not enough virtual points.";return}
- const die=Math.floor(Math.random()*6)+1, win=die>=4, points=win?stake:stake;
- state.balance += win?stake:-stake; state.rolls++; if(win)state.wins++; state.best=Math.max(state.best,die);
- state.history.unshift({roll:state.rolls,die,win,points});state.history=state.history.slice(0,20);
- $("#dice").textContent=die;$("#dice").classList.remove("roll");void $("#dice").offsetWidth;$("#dice").classList.add("roll");
- $("#result").textContent=win?`🎉 You rolled ${die}! +${stake} virtual points`:`You rolled ${die}. -${stake} virtual points`;
+ const results=Array.from({length:4},()=>Math.floor(Math.random()*6)+1);
+ const hits=results.filter(n=>n===selectedColor).length;
+ const win=hits>0;
+ state.balance += win?stake:-stake; state.rolls++; if(win)state.wins++; state.best=Math.max(state.best,win?stake:0);
+ const resultNames=results.map(n=>colorNames[n-1]);
+ state.history.unshift({roll:state.rolls,die:resultNames.join(" • "),win,points:stake}); state.history=state.history.slice(0,20);
+ setResultColors(results,true);
+ const selectedName=colorNames[selectedColor-1];
+ $("#result").textContent=win?`🎉 ${selectedName} appeared ${hits} time${hits>1?"s":""}! +${stake} virtual points`:`${selectedName} did not appear. -${stake} virtual points`;
  render();
 };
 $("#resetBtn").onclick=()=>{if(confirm("Reset your virtual points and progress?")){state={balance:1000,rolls:0,wins:0,best:0,vip:0,history:[],theme:"Neon"};location.reload()}};
